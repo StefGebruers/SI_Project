@@ -1,11 +1,6 @@
-#!/usr/bin/python3
-
-# This script will read data from serial connected to the digital meter P1 port
-
-# credits sample code
-    # Jens Depuydt
-    # https://www.jensd.be
-    # https://github.com/jensdepuydt
+import requests
+import random
+import time
 
 import serial
 import sys
@@ -114,12 +109,12 @@ def main():
                         r = parsetelegramline(line.decode('ascii'))
                         if r:
                             output.append(r)
-                            
                             if debug:
                                 print(f"desc:{r[0]}, val:{r[1]}, u:{r[2]}")
-                    print(tabulate(output,
-                                   headers=['Description', 'Value', 'Unit'],
-                                   tablefmt='github'))
+                    #print(tabulate(output,
+                    #              headers=['Description', 'Value', 'Unit'],
+                    #             tablefmt='github'))
+                    prepare_data(output)
         except KeyboardInterrupt:
             print("Stopping...")
             ser.close()
@@ -133,5 +128,26 @@ def main():
         # flush the buffer
         ser.flush()
 
-if __name__ == '__main__':
+# Configuration settings
+influxdb_url = "http://localhost:8086/api/v2/write?org=docs&bucket=home"
+api_token = "opbXBXfTUfD8POAT3WYYGtlC2PTbkwx4QwbzIH4tREDTSw1TttqNKTfExafd0opk1Eixx_pK6eD285kjuGSwDw=="
+
+def prepare_data(values):
+    for line in values:
+        data = f"Meter {line[0].replace(' ', '_')}={line[1]}"
+        print(data)
+        send_to_influxdb(data)
+
+def send_to_influxdb(values):
+    headers = {
+        "Authorization": f"Token {api_token}",
+        "Content-Type": "text/plain"
+    }
+    response = requests.post(influxdb_url, data=values, headers=headers)
+    if response.status_code == 204:
+        print(f"Successfully written to InfluxDB.")
+    else:
+        print(f"Failed to write to InfluxDB. Status code: {response.status_code}")
+
+if __name__ == "__main__":
     main()

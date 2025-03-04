@@ -18,15 +18,24 @@ import os
 clear = lambda: os.system('clear')
 
 # Change your serial port here:
-serialport = '/dev/ttyUSB1'
+serialport = '/dev/ttyUSB1	'
 
 # Enable debug if needed:
 debug = False
 
 # Add/update OBIS codes here:
 obiscodes = {
+    "0-0:96.14.0": "Current rate (1=day,2=night)",
+    "1-0:1.8.1": "Rate 1 (day) - total consumption",
+    "1-0:1.8.2": "Rate 2 (night) - total consumption",
+    "1-0:2.8.1": "Rate 1 (day) - total production",
+    "1-0:2.8.2": "Rate 2 (night) - total production",
     "1-0:21.7.0": "L1 consumption",
+    "1-0:1.7.0": "All phases consumption",
     "1-0:22.7.0": "L1 production",
+    "1-0:2.7.0": "All phases production",
+    "1-0:32.7.0": "L1 voltage",
+    "1-0:31.7.0": "L1 current",
     }
 
 
@@ -114,7 +123,6 @@ def main():
                         r = parsetelegramline(line.decode('ascii'))
                         if r:
                             output.append(r)
-                            
                             if debug:
                                 print(f"desc:{r[0]}, val:{r[1]}, u:{r[2]}")
                     print(tabulate(output,
